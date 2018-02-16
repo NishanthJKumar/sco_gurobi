@@ -83,7 +83,10 @@ class Prob(object):
             self._quad_obj_exprs.append(bound_expr)
         else:
             self._nonquad_obj_exprs.append(bound_expr)
-        self._vars.add(bound_expr.var)
+        self.add_var(bound_expr.var)
+
+    def add_var(self, var):
+        self._vars.add(var)
 
     def add_cnt_expr(self, bound_expr, group_ids=None):
         """
@@ -118,7 +121,7 @@ class Prob(object):
                     if other == gid: continue
                     self._cnt_groups_overlap[gid].add(other)
 
-        self._vars.add(var)
+        self.add_var(var)
 
     def _reset_hinge_cnts(self):
         ## reset the hinge_cnts
@@ -175,7 +178,10 @@ class Prob(object):
         for i in range(A.shape[0]):
             grb_expr = grb.LinExpr()
             inds, = np.nonzero(A[i, :])
-            grb_expr += b[i]
+            try:
+                grb_expr += b[i]
+            except:
+                import ipdb; ipdb.set_trace()
             grb_expr.addTerms(A[i, inds].tolist(), grb_var[inds, 0].tolist())
             grb_exprs.append([grb_expr])
         return np.array(grb_exprs), []
@@ -234,6 +240,8 @@ class Prob(object):
                 assert g_var.shape == val.shape
                 for i in np.ndindex(g_var.shape):
                     if not np.isnan(val[i]):
+                        if g_var[i] == None:
+                            import ipdb; ipdb.set_trace()
                         obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
 
         # grb_exprs = []
@@ -246,15 +254,19 @@ class Prob(object):
 
         self._model.setObjective(obj)
         self._model.optimize()
+
+        if self._model.status == 4:
+            self._model.computeIIS()
+            self._model.write('infeasible.ilp')
+            print 'Failed to satisfy linear equalities. Infeasible Constraint set written to infeasible.ilp'
+            import ipdb; ipdb.set_trace()
+            # raise Exception('Failed to satisfy linear equalities. Infeasible Constraint set written to infeasible.ilp')
+
         if self._model.status != 2:
             return False
         
         # if self._model.status == 3:
         #     self._model.optimize()
-        # if self._model.status == 4:
-        #     self._model.computeIIS()
-        #     self._model.write('infeasible.ilp')
-        #     raise Exception('Failed to satisfy linear equalities. Infeasible Constraint set written to infeasible.ilp')
         # elif self._model.status != 2:
         #     self._model.write('infeasible.lp')
         #     raise Exception('Failed to satisfy linear equalities. Infeasible Constraint set written to infeasible.lp')
