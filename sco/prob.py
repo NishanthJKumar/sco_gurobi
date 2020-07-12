@@ -178,10 +178,7 @@ class Prob(object):
         for i in range(A.shape[0]):
             grb_expr = grb.LinExpr()
             inds, = np.nonzero(A[i, :])
-            try:
-                grb_expr += b[i]
-            except:
-                import ipdb; ipdb.set_trace()
+            grb_expr += b[i]
             grb_expr.addTerms(A[i, inds].tolist(), grb_var[inds, 0].tolist())
             grb_exprs.append([grb_expr])
         return np.array(grb_exprs), []

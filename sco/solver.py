@@ -57,7 +57,7 @@ class Solver(object):
 
         for i in range(self.max_merit_coeff_increases):
             success = self._min_merit_fn(prob, penalty_coeff, trust_region_size, verbose=verbose)
-            prob._update_vars()
+            # prob._update_vars()
             if verbose:
                 print '\n'
 
@@ -104,8 +104,8 @@ class Solver(object):
                 new_merit = prob.get_value(penalty_coeff)
 
                 approx_merit_improve = merit - model_merit
-                if not approx_merit_improve:
-                    approx_merit_improve += 1e-10
+                #if not approx_merit_improve:
+                #    approx_merit_improve += 1e-10
 
                 ## we converge if one of the violated constraint groups 
                 ## is below the minimum improvement
