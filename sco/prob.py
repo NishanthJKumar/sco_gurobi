@@ -241,7 +241,6 @@ class Prob(object):
                 for i in np.ndindex(g_var.shape):
                     if not np.isnan(val[i]):
                             obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
-                        obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
 
             # grb_exprs = []
             # for bound_expr in self._quad_obj_exprs:
