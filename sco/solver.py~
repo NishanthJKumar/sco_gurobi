@@ -104,8 +104,6 @@ class Solver(object):
                 new_merit = prob.get_value(penalty_coeff)
 
                 approx_merit_improve = merit - model_merit
-                if not approx_merit_improve:
-                    approx_merit_improve += 1e-10
 
                 ## we converge if one of the violated constraint groups 
                 ## is below the minimum improvement
@@ -116,7 +114,10 @@ class Solver(object):
                     violated = approx_improve_vec > -np.inf
 
                 exact_merit_improve = merit - new_merit
-                merit_improve_ratio = exact_merit_improve / approx_merit_improve
+                try:
+                    merit_improve_ratio = exact_merit_improve / approx_merit_improve
+                except:
+                    import ipdb; ipdb.set_trace()
 
                 if verbose:
                     print("      merit: {0}. model_merit: {1}. new_merit: {2}".format(merit, model_merit, new_merit))
