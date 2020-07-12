@@ -234,15 +234,15 @@ class Prob(object):
                 assert g_var.shape == val.shape
                 for i in np.ndindex(g_var.shape):
                     if not np.isnan(val[i]):
-                        obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
+                            obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
 
-        # grb_exprs = []
-        # for bound_expr in self._quad_obj_exprs:
-        #     grb_expr, grb_cnts = self._expr_to_grb_expr(bound_expr)
-        #     self._grb_penalty_cnts.extend(grb_cnts)
-        #     grb_exprs.extend(grb_expr.flatten().tolist())
+            # grb_exprs = []
+            # for bound_expr in self._quad_obj_exprs:
+            #     grb_expr, grb_cnts = self._expr_to_grb_expr(bound_expr)
+            #     self._grb_penalty_cnts.extend(grb_cnts)
+            #     grb_exprs.extend(grb_expr.flatten().tolist())
 
-        # obj += grb.quicksum(grb_exprs)
+            # obj += grb.quicksum(grb_exprs)
 
         self._model.setObjective(obj)
         self._model.optimize()
@@ -282,7 +282,11 @@ class Prob(object):
         been added to the model when constraints were added to this problem.
         """
         self._model.optimize()
-        self._update_vars()
+        try:
+            self._update_vars()
+        except Exception as e:
+            print(e)
+            print('Model status:', self._model.status)
         self._callback()
 
 
