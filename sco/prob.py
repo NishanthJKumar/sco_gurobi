@@ -261,7 +261,11 @@ class Prob(object):
         # elif self._model.status != 2:
         #     self._model.write('infeasible.lp')
         #     raise Exception('Failed to satisfy linear equalities. Infeasible Constraint set written to infeasible.lp')
-        self._update_vars()
+        try:
+            self._update_vars()
+        except Exception as e:
+            print(e)
+            print('Model status:', self._model.status)
         self._callback()
         return True
 
