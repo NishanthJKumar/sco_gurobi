@@ -1,6 +1,6 @@
 import gurobipy as grb
 GRB = grb.GRB
-from expr import *
+from .expr import *
 from ipdb import set_trace as st
 from collections import defaultdict
 
@@ -262,7 +262,7 @@ class Prob(object):
             self._update_vars()
         except Exception as e:
             print(e)
-            print('Model status:', self._model.status)
+            print(('Model status:', self._model.status))
         self._callback()
         return True
 
@@ -290,7 +290,7 @@ class Prob(object):
             self._update_vars()
         except Exception as e:
             print(e)
-            print('Model status:', self._model.status)
+            print(('Model status:', self._model.status))
         self._callback()
 
 
@@ -523,7 +523,7 @@ class PosGRBVarManager(object):
         self._grb_vars.extend(new_grb_vars)
         self._model.update()
 
-    def next(self):
+    def __next__(self):
         """
         Returns one positive Gurobi variable.
         """
@@ -539,7 +539,7 @@ class PosGRBVarManager(object):
         """
         a = np.empty(shape, dtype=object)
         for x in np.nditer(a, op_flags=['readwrite'], flags=['refs_ok']):
-            x[...] = self.next()
+            x[...] = next(self)
         return a
 
     def reset():

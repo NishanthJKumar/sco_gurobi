@@ -111,7 +111,7 @@ class TestSolver(unittest.TestCase):
 
     def test_prob5(self):
         x0 = np.array([[0.0],[0.0]])
-        angles = np.transpose(np.array(range(1,7)) * 2*np.pi/6)
+        angles = np.transpose(np.array(list(range(1,7))) * 2*np.pi/6)
         angles = angles.reshape((6,1))
         A_ineq = np.hstack((np.cos(angles),np.sin(angles)))
         b_ineq = np.ones(angles.shape)
@@ -121,7 +121,7 @@ class TestSolver(unittest.TestCase):
 
     def test_prob6(self):
         x0 = np.array([[0.0],[0.0]])
-        angles = np.transpose(np.array(range(1,7)) * 2*np.pi/6)
+        angles = np.transpose(np.array(list(range(1,7))) * 2*np.pi/6)
         angles = angles.reshape((6,1))
         Q = .1*np.identity(2)
         A_ineq = np.hstack((np.cos(angles),np.sin(angles)))

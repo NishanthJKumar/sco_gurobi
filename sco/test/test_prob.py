@@ -546,7 +546,7 @@ class TestProb(unittest.TestCase):
         pgm = pos_grb_manager
         PosGRBVarManager.INC_NUM = 2
         self.assertTrue(len(pgm._grb_vars) == init_num)
-        var = pgm.next()
+        var = next(pgm)
         test_grb_var_pos(self, var)
         self.assertTrue(len(pgm._grb_vars) == inc_num+init_num)
         a = pgm.get_array(shape)

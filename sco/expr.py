@@ -11,7 +11,7 @@ hess, and convexify method. Variables and values are assumed to be 2D numpy
 arrays.
 """
 
-N_DIGS = 6
+N_DIGS = 10
 
 
 class Expr(object):
@@ -70,8 +70,8 @@ class Expr(object):
         for i, g_row in enumerate(g1):
             for j, g in enumerate(g_row):
                 if not np.allclose(g, g2[i,j], atol=atol):
-                    print "{}, {}".format(i,j)
-                    print g, g2[i, j]
+                    print("{}, {}".format(i,j))
+                    print(g, g2[i, j])
 
     def grad(self, x, num_check=False, atol=DEFAULT_TOL):
         """
@@ -135,7 +135,7 @@ class Expr(object):
             eig_vals = eigvalsh(hess)
             min_eig_val = min(eig_vals)
             if min_eig_val < 0:
-                print("    negative hessian detected. adjusting by {0}.".format(-min_eig_val))
+                print(("    negative hessian detected. adjusting by {0}.".format(-min_eig_val)))
                 hess = hess - np.eye(hess.shape[0])*min_eig_val
             grad = self.grad(x)
             Q = hess

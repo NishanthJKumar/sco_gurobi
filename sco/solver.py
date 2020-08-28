@@ -59,7 +59,7 @@ class Solver(object):
             success = self._min_merit_fn(prob, penalty_coeff, trust_region_size, verbose=verbose)
             # prob._update_vars()
             if verbose:
-                print '\n'
+                print('\n')
 
             if prob.get_max_cnt_violation() > self.cnt_tolerance:
                 penalty_coeff = penalty_coeff*self.merit_coeff_increase_ratio
@@ -67,11 +67,11 @@ class Solver(object):
             else:
                 end = time.time()
                 if verbose:
-                    print "sqp time: ", end-start
+                    print("sqp time: ", end-start)
                 return success
         end = time.time()
         if verbose:
-            print "sqp time: ", end-start
+            print("sqp time: ", end-start)
         return False
 
     # @profile
@@ -84,7 +84,7 @@ class Solver(object):
 
         while True:
             if verbose:
-                print("  sqp_iter: {0}".format(sqp_iter))
+                print(("  sqp_iter: {0}".format(sqp_iter)))
 
             prob.convexify()
             prob.update_obj(penalty_coeff)
@@ -94,7 +94,7 @@ class Solver(object):
 
             while True:
                 if verbose:
-                    print("    trust region size: {0}".format(trust_region_size))
+                    print(("    trust region size: {0}".format(trust_region_size)))
 
                 prob.add_trust_region(trust_region_size)
                 prob.optimize()
@@ -119,12 +119,12 @@ class Solver(object):
                 merit_improve_ratio = exact_merit_improve / approx_merit_improve
 
                 if verbose:
-                    print("      merit: {0}. model_merit: {1}. new_merit: {2}".format(merit, model_merit, new_merit))
-                    print("      approx_merit_improve: {0}. exact_merit_improve: {1}. merit_improve_ratio: {2}".format(approx_merit_improve, exact_merit_improve, merit_improve_ratio))
+                    print(("      merit: {0}. model_merit: {1}. new_merit: {2}".format(merit, model_merit, new_merit)))
+                    print(("      approx_merit_improve: {0}. exact_merit_improve: {1}. merit_improve_ratio: {2}".format(approx_merit_improve, exact_merit_improve, merit_improve_ratio)))
 
                 if self._bad_model(approx_merit_improve):
                     if verbose:
-                        print("Approximate merit function got worse ({0})".format(approx_merit_improve))
+                        print(("Approximate merit function got worse ({0})".format(approx_merit_improve)))
                         print("Either convexification is wrong to zeroth order, or you're in numerical trouble.")
                     prob.restore()
                     return False
@@ -139,7 +139,7 @@ class Solver(object):
                 ## is below the minimum improvement and none of its overlapping
                 ## groups are making progress
                 prob.nonconverged_groups = []
-                for gid, idx in prob.gid2ind.iteritems():
+                for gid, idx in prob.gid2ind.items():
                     if violated[idx] and approx_improve_vec[idx] < self.min_approx_improve:
                         overlap_improve = False
                         for gid2 in prob._cnt_groups_overlap[gid]:
