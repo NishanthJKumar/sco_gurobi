@@ -68,6 +68,8 @@ class Solver(object):
                 end = time.time()
                 if verbose:
                     print("sqp time: ", end-start)
+                if not success:
+                    print("SCO failed without constr. viol.")
                 return success
         end = time.time()
         if verbose:

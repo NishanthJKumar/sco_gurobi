@@ -20,7 +20,7 @@ class Expr(object):
     by default, expressions are defined by black box functions
     """
 
-    def __init__(self, f, grad=None, hess=None):
+    def __init__(self, f, grad=None, hess=None, **kwargs):
         self.f = f
         self._grad = grad
         self._hess = hess
@@ -135,7 +135,7 @@ class Expr(object):
             eig_vals = eigvalsh(hess)
             min_eig_val = min(eig_vals)
             if min_eig_val < 0:
-                print(("    negative hessian detected. adjusting by {0}.".format(-min_eig_val)))
+                # print(("    negative hessian detected. adjusting by {0}.".format(-min_eig_val)))
                 hess = hess - np.eye(hess.shape[0])*min_eig_val
             grad = self.grad(x)
             Q = hess
@@ -427,4 +427,7 @@ class TFExpr(Expr):
     wrapper around exprs defined by a tensorflow graph. Leverages
     automated differentition.
     """
-    pass
+    def __init__(self, f, grad=None, hess=None, sess=None):
+        self.sess = sess
+        return super(TFExpr, self).__init__(f, grad, hess)
+
