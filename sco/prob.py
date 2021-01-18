@@ -3,7 +3,7 @@ GRB = grb.GRB
 from .expr import *
 from ipdb import set_trace as st
 from collections import defaultdict
-
+import time
 
 class Prob(object):
     """
@@ -235,9 +235,13 @@ class Prob(object):
             val = var.get_value()
             if val is not None:
                 assert g_var.shape == val.shape
-                for i in np.ndindex(g_var.shape):
-                    if not np.isnan(val[i]):
-                            obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
+                inds = np.where(~np.isnan(val))
+                val = val[inds]
+                g_var = g_var[inds]
+                obj += np.sum((g_var - val).T.dot(g_var-val))
+                #for i in np.ndindex(g_var.shape):
+                #    if not np.isnan(val[i]):
+                #            obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
 
             # grb_exprs = []
             # for bound_expr in self._quad_obj_exprs:
