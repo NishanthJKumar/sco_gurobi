@@ -11,7 +11,7 @@ hess, and convexify method. Variables and values are assumed to be 2D numpy
 arrays.
 """
 
-N_DIGS = 10
+N_DIGS = 6 # 10
 
 
 class Expr(object):
