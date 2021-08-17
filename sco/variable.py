@@ -1,6 +1,8 @@
 import numpy as np
+
 import gurobipy as grb
 from ipdb import set_trace as st
+
 
 class Variable(object):
     """
@@ -43,6 +45,7 @@ class Variable(object):
         self._grb_vars
         """
         assert self._saved_value is not None
+        # assert not np.any(np.isnan(self._saved_value))
         for index, grb_var in np.ndenumerate(self._grb_vars):
             grb_var.lb = self._saved_value[index] - trust_box_size
             grb_var.ub = self._saved_value[index] + trust_box_size
@@ -64,6 +67,7 @@ class Variable(object):
         """
         Save the current value.
         """
+        # assert not np.any(np.isnan(self._value.copy()))
         self._saved_value = self._value.copy()
 
     def restore(self):

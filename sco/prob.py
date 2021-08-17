@@ -1,9 +1,14 @@
-import gurobipy as grb
-GRB = grb.GRB
-from .expr import *
-from ipdb import set_trace as st
-from collections import defaultdict
 import time
+from collections import defaultdict
+
+import numpy as np
+
+import gurobipy as grb
+from ipdb import set_trace as st
+from sco.expr import *
+
+GRB = grb.GRB
+
 
 class Prob(object):
     """
@@ -34,13 +39,15 @@ class Prob(object):
             with their corresponding Gurobi expression
         """
         self._model = grb_model
-        self._model.params.OutputFlag = 0 # silences Gurobi output
+        self._model.params.OutputFlag = 0  # silences Gurobi output
         self._vars = set()
         if callback is not None:
             self._callback = callback
         else:
+
             def do_nothing():
                 pass
+
             self._callback = do_nothing
 
         self._quad_obj_exprs = []
@@ -50,14 +57,14 @@ class Prob(object):
         # linear constraints are added directly to the model so there's no
         # need for a _lin_cnt_exprs variable
         self._nonlin_cnt_exprs = []
-        
+
         # list of constraints that will hold the hinge constraints
         # for each non-linear constraint, is a pair of constraints
         # for an eq constraint
         self.hinge_created = False
 
         self._penalty_exprs = []
-        self._grb_penalty_cnts = [] # hinge and abs value constraints
+        self._grb_penalty_cnts = []  # hinge and abs value constraints
         self._pgm = PosGRBVarManager(self._model)
 
         self._bexpr_to_grb_expr = {}
@@ -101,7 +108,6 @@ class Prob(object):
         comp_expr = bound_expr.expr
         expr = comp_expr.expr
         var = bound_expr.var
-        assert isinstance(comp_expr, CompExpr)
         if isinstance(expr, AffExpr):
             # adding constraint directly into model
             grb_expr, grb_cnt = self._aff_expr_to_grb_expr(expr, var)
@@ -114,20 +120,21 @@ class Prob(object):
             self._reset_hinge_cnts()
 
             if group_ids is None:
-                group_ids = ['all']
+                group_ids = ["all"]
             for gid in group_ids:
                 self._cnt_groups[gid].add(bound_expr)
                 for other in group_ids:
-                    if other == gid: continue
+                    if other == gid:
+                        continue
                     self._cnt_groups_overlap[gid].add(other)
 
         self.add_var(var)
 
     def _reset_hinge_cnts(self):
         ## reset the hinge_cnts
-        self.hinge_created=False
+        self.hinge_created = False
 
-    #@profile
+    # @profile
     def _add_np_array_grb_cnt(self, grb_exprs, sense, val):
         """
         Adds a numpy array of Gurobi constraints to the model and returns
@@ -138,7 +145,7 @@ class Prob(object):
             cnts.append(self._model.addConstr(grb_expr, sense, val[index]))
         return cnts
 
-    #@profile
+    # @profile
     def _expr_to_grb_expr(self, bound_expr):
         """
         Translates AffExpr, QuadExpr, HingeExpr and AbsExpr to Gurobi
@@ -163,13 +170,17 @@ class Prob(object):
         elif isinstance(expr, AbsExpr):
             return self._abs_expr_to_grb_expr(expr, var)
         elif isinstance(expr, CompExpr):
-            raise Exception("Comparison Expressions cannot be converted to \
-                a Gurobi expression. Use add_cnt_expr instead")
+            raise Exception(
+                "Comparison Expressions cannot be converted to \
+                a Gurobi expression. Use add_cnt_expr instead"
+            )
         else:
-            raise Exception("This type of Expression cannot be converted to\
-                a Gurobi expression.")
+            raise Exception(
+                "This type of Expression cannot be converted to\
+                a Gurobi expression."
+            )
 
-    #@profile
+    # @profile
     def _aff_expr_to_grb_expr(self, aff_expr, var):
         grb_var = var.get_grb_vars()
         grb_exprs = []
@@ -177,7 +188,7 @@ class Prob(object):
         b = aff_expr.b
         for i in range(A.shape[0]):
             grb_expr = grb.LinExpr()
-            inds, = np.nonzero(A[i, :])
+            (inds,) = np.nonzero(A[i, :])
             grb_expr += b[i]
             grb_expr.addTerms(A[i, inds].tolist(), grb_var[inds, 0].tolist())
             grb_exprs.append([grb_expr])
@@ -191,7 +202,7 @@ class Prob(object):
         rows, cols = x.shape
         assert cols == 1
         inds = np.nonzero(Q)
-        coeffs = 0.5*Q[inds]
+        coeffs = 0.5 * Q[inds]
         v1 = x[inds[0], 0]
         v2 = x[inds[1], 0]
         grb_expr.addTerms(coeffs.tolist(), v1.tolist(), v2.tolist())
@@ -200,16 +211,17 @@ class Prob(object):
         v1 = x[inds[1], 0]
         grb_expr.addTerms(coeffs.tolist(), v1.tolist())
         grb_expr = grb_expr + quad_expr.b
+
         return np.array([[grb_expr]]), []
 
-
-    #@profile
+    # @profile
     def _hinge_expr_to_grb_expr(self, hinge_expr, var):
         aff_expr = hinge_expr.expr
         assert isinstance(aff_expr, AffExpr)
         grb_expr, _ = self._aff_expr_to_grb_expr(aff_expr, var)
         grb_hinge = self._pgm.get_array(grb_expr.shape)
         cnts = self._add_np_array_grb_cnt(grb_expr, GRB.LESS_EQUAL, grb_hinge)
+
         return grb_hinge, cnts
 
     def _abs_expr_to_grb_expr(self, abs_expr, var):
@@ -218,8 +230,9 @@ class Prob(object):
         grb_expr, _ = self._aff_expr_to_grb_expr(aff_expr, var)
         pos = self._pgm.get_array(grb_expr.shape)
         neg = self._pgm.get_array(grb_expr.shape)
-        cnts = self._add_np_array_grb_cnt(grb_expr, GRB.EQUAL, pos-neg)
-        return pos+neg, cnts
+        cnts = self._add_np_array_grb_cnt(grb_expr, GRB.EQUAL, pos - neg)
+
+        return pos + neg, cnts
 
     def find_closest_feasible_point(self):
         """
@@ -238,8 +251,15 @@ class Prob(object):
                 inds = np.where(~np.isnan(val))
                 val = val[inds]
                 g_var = g_var[inds]
-                obj += np.sum((g_var - val).T.dot(g_var-val))
-                #for i in np.ndindex(g_var.shape):
+                obj += np.sum((g_var - val).T.dot(g_var - val))
+
+                # for i in range(g_var.shape[0]):
+                #     if g_var[i].var_name == "(can1-pose-(0, 2))":
+                #         import pdb
+
+                #         pdb.set_trace()
+
+                # for i in np.ndindex(g_var.shape):
                 #    if not np.isnan(val[i]):
                 #            obj += g_var[i]*g_var[i] - 2*val[i]*g_var[i] + val[i]*val[i]
 
@@ -252,24 +272,10 @@ class Prob(object):
             # obj += grb.quicksum(grb_exprs)
 
         self._model.setObjective(obj)
-        self._model.optimize()
 
-        if self._model.status != 2:
-            return False
-        
-        # if self._model.status == 3:
-        #     self._model.optimize()
-        # elif self._model.status != 2:
-        #     self._model.write('infeasible.lp')
-        #     raise Exception('Failed to satisfy linear equalities. Infeasible Constraint set written to infeasible.lp')
-        try:
-            self._update_vars()
-        except Exception as e:
-            print(e)
-            print(('Model status:', self._model.status))
-        self._callback()
-        return True
+        self.optimize()
 
+        return self._model.status == 2
 
     def optimize(self):
         """
@@ -289,19 +295,24 @@ class Prob(object):
         The Gurobi constraints are the linear constraints which have already
         been added to the model when constraints were added to this problem.
         """
+
         self._model.optimize()
+
         try:
             self._update_vars()
         except Exception as e:
             print(e)
-            print(('Model status:', self._model.status))
+            print(("Model status:", self._model.status))
         self._callback()
 
+    def print_grb_vals(self):
+        """convenience function for debugging"""
+        for var in self._model.getVars():
+            print(var)
 
     # @profile
     def update_obj(self, penalty_coeff=0.0):
         self._lazy_spawn_grb_cnts()
-
         grb_exprs = []
         for bound_expr in self._quad_obj_exprs + self._approx_obj_exprs:
             grb_expr, grb_cnts = self._expr_to_grb_expr(bound_expr)
@@ -310,9 +321,10 @@ class Prob(object):
 
         for i, bound_expr in enumerate(self._penalty_exprs):
             grb_expr = self._update_nonlin_cnt(bound_expr, i).flatten()
-            grb_exprs.extend(grb_expr*penalty_coeff)
+            grb_exprs.extend(grb_expr * penalty_coeff)
 
         obj = grb.quicksum(grb_exprs)
+
         self._model.setObjective(obj)
         self._model.update()
 
@@ -348,23 +360,26 @@ class Prob(object):
             old_nz = self._grb_nz[ind]
             grb_vars = var.get_grb_vars()
             nz = np.nonzero(A)
-            
+
+            # This updates the constraint's RHS
             for i in range(A.shape[0]):
                 ## add negative b to rhs because it
                 ## changes sides of the ineq/eq
-                cnts[i].setAttr('rhs', -b[i, 0])
+                cnts[i].setAttr("rhs", -b[i, 0])
 
+            # This sets all the old nz terms' coeffs to 0
             for idx in range(old_nz[0].shape[0]):
                 i, j = old_nz[0][idx], old_nz[1][idx]
                 self._model.chgCoeff(cnts[i], grb_vars[j, 0], 0)
 
-                
+            # The nonzero terms are then updated with their new coeffs
             ## then set the non-zero values
             for idx in range(nz[0].shape[0]):
                 i, j = nz[0][idx], nz[1][idx]
                 self._model.chgCoeff(cnts[i], grb_vars[j, 0], A[i, j])
 
             self._grb_nz[ind] = nz
+
             return grb_expr
         else:
             raise NotImplementedError
@@ -376,7 +391,6 @@ class Prob(object):
         for var in self._vars:
             var.add_trust_region(trust_region_size)
 
-
     # @profile
     def convexify(self):
         """
@@ -386,17 +400,18 @@ class Prob(object):
         The penalty approximation of the non-linear constraints
         (self._nonlin_cnt_exprs) is saved in self._penalty_exprs
         """
-        self._approx_obj_exprs = [bexpr.convexify(degree = 2) \
-            for bexpr in self._nonquad_obj_exprs]
-        self._penalty_exprs = [bexpr.convexify(degree = 1) \
-            for bexpr in self._nonlin_cnt_exprs]
+        self._approx_obj_exprs = [
+            bexpr.convexify(degree=2) for bexpr in self._nonquad_obj_exprs
+        ]
+        self._penalty_exprs = [
+            bexpr.convexify(degree=1) for bexpr in self._nonlin_cnt_exprs
+        ]
         self._penalty_groups = []
         gids = sorted(self._cnt_groups.keys())
         self.gid2ind = {}
         for i, gid in enumerate(gids):
             self.gid2ind[gid] = i
-            cur_bexprs = [bexpr.convexify(degree=1)
-                          for bexpr in self._cnt_groups[gid]]
+            cur_bexprs = [bexpr.convexify(degree=1) for bexpr in self._cnt_groups[gid]]
             self._penalty_groups.append(cur_bexprs)
 
     # #@profile
@@ -409,24 +424,30 @@ class Prob(object):
         by the constraint violations (computed using _nonlin_cnt_exprs)
 
         if vectorize=True, then this returns a vector of constraint
-        violations -- 1 per group id. 
+        violations -- 1 per group id.
         """
         if vectorize:
             gids = sorted(self._cnt_groups.keys())
             value = np.zeros(len(gids))
             for i, gid in enumerate(gids):
-                value[i] = np.sum(np.sum([np.sum(self._compute_cnt_violation(bexpr))
-                                          for bexpr in self._cnt_groups[gid]]))
+                value[i] = np.sum(
+                    np.sum(
+                        [
+                            np.sum(self._compute_cnt_violation(bexpr))
+                            for bexpr in self._cnt_groups[gid]
+                        ]
+                    )
+                )
             return value
         value = 0.0
         for bound_expr in self._quad_obj_exprs + self._nonquad_obj_exprs:
             value += np.sum(np.sum(bound_expr.eval()))
         for bound_expr in self._nonlin_cnt_exprs:
             cnt_vio = self._compute_cnt_violation(bound_expr)
-            value += penalty_coeff*np.sum(cnt_vio)
+            value += penalty_coeff * np.sum(cnt_vio)
         return value
 
-    #@profile
+    # @profile
     def _compute_cnt_violation(self, bexpr):
         comp_expr = bexpr.expr
         var_val = bexpr.var.get_value()
@@ -460,7 +481,7 @@ class Prob(object):
         last convexification was performed.
 
         if vectorize=True, then this returns a vector of constraint
-        violations -- 1 per group id. 
+        violations -- 1 per group id.
         """
         if vectorize:
             value = np.zeros(len(self._penalty_groups))
@@ -473,16 +494,19 @@ class Prob(object):
         for bound_expr in self._quad_obj_exprs + self._approx_obj_exprs:
             value += np.sum(np.sum(bound_expr.eval()))
         for bound_expr in self._penalty_exprs:
-            value += penalty_coeff*np.sum(bound_expr.eval())
-        
+            value += penalty_coeff * np.sum(bound_expr.eval())
+
         return value
 
     def _update_vars(self):
         """
         Updates the variables values
         """
+        unique_grb_vars = set()
         for var in self._vars:
             var.update()
+            for gv in var._grb_vars.flatten().tolist():
+                unique_grb_vars.add(gv)
 
     def save(self):
         """
@@ -499,12 +523,14 @@ class Prob(object):
         for var in self._vars:
             var.restore()
 
+
 class PosGRBVarManager(object):
     """
     Manages positive Gurobi variables. The purpose of the manager is to create
     many Gurobi variables at once to decrease the number of Gurobi model update
     because model updates take a long time.
     """
+
     INIT_NUM = 1000
     INC_NUM = 1000
 
@@ -522,8 +548,7 @@ class PosGRBVarManager(object):
         """
         if num is None:
             num = self._inc_num
-        new_grb_vars = [self._model.addVar(lb=0.0, ub=GRB.INFINITY) \
-                            for i in range(num)]
+        new_grb_vars = [self._model.addVar(lb=0.0, ub=GRB.INFINITY) for i in range(num)]
         self._grb_vars.extend(new_grb_vars)
         self._model.update()
 
@@ -531,18 +556,18 @@ class PosGRBVarManager(object):
         """
         Returns one positive Gurobi variable.
         """
-        if self._index == len(self._grb_vars)-1:
+        if self._index == len(self._grb_vars) - 1:
             self._add_grb_vars()
         self._index += 1
-        return self._grb_vars[self._index-1]
+        return self._grb_vars[self._index - 1]
 
-    #@profile
+    # @profile
     def get_array(self, shape):
         """
         Returns a numpy array of unused positive Gurobi variables.
         """
         a = np.empty(shape, dtype=object)
-        for x in np.nditer(a, op_flags=['readwrite'], flags=['refs_ok']):
+        for x in np.nditer(a, op_flags=["readwrite"], flags=["refs_ok"]):
             x[...] = next(self)
         return a
 
