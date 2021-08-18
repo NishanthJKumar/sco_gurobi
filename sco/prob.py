@@ -1,9 +1,9 @@
 import time
 from collections import defaultdict
 
+import gurobipy as grb
 import numpy as np
 
-import gurobipy as grb
 from sco.expr import *
 
 GRB = grb.GRB
