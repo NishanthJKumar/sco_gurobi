@@ -62,3 +62,4 @@ target/
 .ipynb_checkpoints
 sco/.vscode/settings.json
 sco/.ruby-version
+.ruby-version
