@@ -1,2 +1,2 @@
-# sco
-Sequential Optimization Optimization
+# sco Gurobi
+Sequential Convex Optimization with Gurobi
