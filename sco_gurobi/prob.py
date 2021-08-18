@@ -1,10 +1,13 @@
-import time
+# fmt: off
 from collections import defaultdict
 
 import gurobipy as grb
 import numpy as np
 
-from sco.expr import *
+from sco_gurobi.expr import (AbsExpr, AffExpr, CompExpr, EqExpr, HingeExpr,
+                             LEqExpr, QuadExpr)
+
+# fmt: on
 
 GRB = grb.GRB
 
@@ -570,5 +573,5 @@ class PosGRBVarManager(object):
             x[...] = next(self)
         return a
 
-    def reset():
+    def reset(self):
         self._index = 0

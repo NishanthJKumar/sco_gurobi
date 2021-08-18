@@ -1,11 +1,15 @@
+# fmt: off
 import unittest
 
+import gurobipy as grb
 import numpy as np
 
-import gurobipy as grb
-from prob import PosGRBVarManager, Prob
-from sco.expr import *
-from variable import Variable
+from sco_gurobi.expr import (AbsExpr, AffExpr, BoundExpr, CompExpr, EqExpr,
+                             Expr, HingeExpr, LEqExpr, QuadExpr)
+from sco_gurobi.prob import PosGRBVarManager, Prob
+from sco_gurobi.variable import Variable
+
+# fmt: on
 
 GRB = grb.GRB
 
@@ -159,7 +163,6 @@ class TestProb(unittest.TestCase):
     def test_expr_to_grb_expr_w_expr(self):
         model = grb.Model()
         prob = Prob(model)
-        expr = Expr(f)
         bexpr = BoundExpr(f, None)
         try:
             prob._expr_to_grb_expr(bexpr)
@@ -306,7 +309,7 @@ class TestProb(unittest.TestCase):
         var = Variable(grb_vars)
 
         model.update()
-        grb_cnt = model.addConstr(grb_var, GRB.EQUAL, 0)
+        model.addConstr(grb_var, GRB.EQUAL, 0)
         model.optimize()
         var.update()
 
@@ -327,7 +330,7 @@ class TestProb(unittest.TestCase):
         var = Variable(grb_vars)
 
         model.update()
-        grb_cnt = model.addConstr(grb_var, GRB.EQUAL, 0)
+        model.addConstr(grb_var, GRB.EQUAL, 0)
         model.optimize()
         var.update()
 
@@ -548,7 +551,6 @@ class TestProb(unittest.TestCase):
 
     def test_pos_grb_var_manager(self):
         model = grb.Model()
-        prob = Prob(model)
         init_num = 1
         inc_num = 10
         shape = (2, 7)

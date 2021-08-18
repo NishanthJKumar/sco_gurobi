@@ -63,3 +63,7 @@ target/
 sco/.vscode/settings.json
 sco/.ruby-version
 .ruby-version
+
+# Misc.
+sco_gurobi/.vscode/
+.vscode/

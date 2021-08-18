@@ -1,7 +1,6 @@
 import time
 
 import numpy as np
-from ipdb import set_trace as st
 
 
 class Solver(object):
@@ -38,7 +37,7 @@ class Solver(object):
             self.min_approx_improve = tol
             self.cnt_tolerance = tol
 
-        if method is "penalty_sqp":
+        if method == "penalty_sqp":
             return self._penalty_sqp(prob, verbose=verbose)
         else:
             raise Exception("This method is not supported.")

@@ -1,9 +1,9 @@
 import unittest
 
+import gurobipy as grb
 import numpy as np
 
-import gurobipy as grb
-from variable import Variable
+from sco_gurobi.variable import Variable
 
 GRB = grb.GRB
 
@@ -86,7 +86,7 @@ class TestVariable(unittest.TestCase):
 
         grb_vars = np.array([grb_var])
         var = Variable(grb_vars)
-        with self.assertRaises(AttributeError) as cm:
+        with self.assertRaises(AttributeError) as _:
             var.update()
 
         obj = grb.QuadExpr()
