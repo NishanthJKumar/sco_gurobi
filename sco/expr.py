@@ -1,8 +1,6 @@
+import numdifftools as nd
 import numpy as np
 from scipy.linalg import eigvalsh
-
-import numdifftools as nd
-from ipdb import set_trace as st
 
 DEFAULT_TOL = 1e-4
 
@@ -69,7 +67,6 @@ class Expr(object):
         grad_fn = nd.Jacobian(self._get_flat_f(x))
 
         return grad_fn(x)
-        # return grad_fn(x.flatten())
 
     def _debug_grad(self, g1, g2, atol=DEFAULT_TOL):
         for i, g_row in enumerate(g1):
@@ -148,7 +145,6 @@ class Expr(object):
             eig_vals = eigvalsh(hess)
             min_eig_val = min(eig_vals)
             if min_eig_val < 0:
-                # print(("    negative hessian detected. adjusting by {0}.".format(-min_eig_val)))
                 hess = hess - np.eye(hess.shape[0]) * min_eig_val
             grad = self.grad(x)
             Q = hess

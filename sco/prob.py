@@ -4,7 +4,6 @@ from collections import defaultdict
 import numpy as np
 
 import gurobipy as grb
-from ipdb import set_trace as st
 from sco.expr import *
 
 GRB = grb.GRB
